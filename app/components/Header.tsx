@@ -4,7 +4,11 @@ import { Nav } from "./Nav";
 
 export function Header() {
   const pathname = usePathname();
-  const showNav = !(pathname === "/" || pathname.startsWith("/portal"));
+  const showNav = !(
+    pathname === "/" ||
+    pathname.startsWith("/portal") ||
+    pathname.startsWith("/login")
+  );
   return (
     <header className="mb-6 flex items-center justify-between">
       <div className="flex items-center gap-3">
