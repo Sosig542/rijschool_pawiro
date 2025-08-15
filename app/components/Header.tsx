@@ -7,7 +7,8 @@ export function Header() {
   const showNav = !(
     pathname === "/" ||
     pathname.startsWith("/portal") ||
-    pathname.startsWith("/login")
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/instructor/login")
   );
   return (
     <header className="mb-6 flex items-center justify-between">

@@ -10,9 +10,13 @@ export async function GET() {
 
   const totalStudents = students.length;
   const missingDocs = students.filter(
-    (s: { documents: Array<{ type: string }> }) =>
+    (s: { documents: Array<{ type: string; isSubmitted: boolean }> }) =>
       REQUIRED_DOC_TYPES.some(
-        (t) => !s.documents.some((d: { type: string }) => d.type === t)
+        (t) =>
+          !s.documents.some(
+            (d: { type: string; isSubmitted: boolean }) =>
+              d.type === t && d.isSubmitted
+          )
       )
   ).length;
   const totalReceived = payments.reduce(

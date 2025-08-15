@@ -1,30 +1,43 @@
-import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(
-  request: Request,
+export async function PUT(
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const studentId = params.id;
-  const formData = await request.formData();
-  const type = String(formData.get("type"));
-  const file = formData.get("file") as File | null;
-  if (!file) return NextResponse.json({ error: "No file" }, { status: 400 });
-  const arrayBuffer = await file.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-  const safeName = `${Date.now()}-${file.name.replace(
-    /[^a-zA-Z0-9_\.-]/g,
-    "_"
-  )}`;
-  const fs = await import("fs/promises");
-  const path = await import("path");
-  const uploadsDir = path.join(process.cwd(), "public", "uploads");
-  await fs.mkdir(uploadsDir, { recursive: true });
-  const fullPath = path.join(uploadsDir, safeName);
-  await fs.writeFile(fullPath, buffer);
+  try {
+    const formData = await request.formData();
+    const documentsJson = formData.get("documents");
+    const documents = JSON.parse(documentsJson as string);
+    const studentId = params.id;
 
-  const created = await prisma.document.create({
-    data: { studentId, type, filename: safeName },
-  });
-  return NextResponse.json(created);
+    // Delete all existing documents for this student
+    await prisma.document.deleteMany({
+      where: { studentId },
+    });
+
+    // Create new documents based on checkbox status
+    const documentsToCreate = documents
+      .filter((doc: any) => doc.isSubmitted)
+      .map((doc: any) => ({
+        studentId,
+        type: doc.type,
+        isSubmitted: true,
+        submittedAt: doc.submittedAt ? new Date(doc.submittedAt) : new Date(),
+      }));
+
+    if (documentsToCreate.length > 0) {
+      await prisma.document.createMany({
+        data: documentsToCreate,
+      });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error updating documents:", error);
+    return NextResponse.json(
+      { error: "Failed to update documents" },
+      { status: 500 }
+    );
+  }
 }

@@ -14,6 +14,7 @@ model User {
   email     String   @unique
   name      String
   password  String
+  role      UserRole @default(ADMIN)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -40,6 +41,7 @@ model Student {
   practicalExamAt    DateTime?
   documents          Document[]
   payments           Payment[]
+  lessonBookings     LessonBooking[]
 }
 
 model Document {
@@ -47,8 +49,8 @@ model Document {
   student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
   studentId   String
   type        String
-  filename    String   // stored file name under public/uploads
-  uploadedAt  DateTime @default(now())
+  isSubmitted Boolean  @default(false) // checkbox status instead of filename
+  submittedAt DateTime? // when the document was marked as submitted
 }
 
 model Payment {
@@ -72,6 +74,68 @@ model Newsletter {
   isPublished Boolean  @default(false)
   publishedAt DateTime?
   createdAt   DateTime @default(now())
+}
+
+model Instructor {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  isActive  Boolean  @default(true)
+  schedules LessonSchedule[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LessonSchedule {
+  id           String      @id @default(cuid())
+  instructorId String
+  instructor   Instructor  @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  dayOfWeek    DayOfWeek
+  isAvailable  Boolean     @default(false)
+  maxStudents  Int         @default(5)
+  startTime    String      // e.g., "09:00"
+  endTime      String      // e.g., "17:00"
+  bookings     LessonBooking[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@unique([instructorId, dayOfWeek])
+}
+
+model LessonBooking {
+  id           String      @id @default(cuid())
+  studentId    String
+  student      Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  scheduleId   String
+  schedule     LessonSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  lessonDate   DateTime    // Specific date for the lesson
+  status       LessonStatus @default(SCHEDULED)
+  notes        String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@unique([studentId, lessonDate]) // One lesson per student per day
+}
+
+enum UserRole {
+  ADMIN
+  INSTRUCTOR
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+}
+
+enum LessonStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
 }
 
 

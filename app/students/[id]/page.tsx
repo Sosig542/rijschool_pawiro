@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { REQUIRED_DOC_TYPES } from "@/lib/requiredDocs";
 import { notFound, redirect } from "next/navigation";
+import DocumentManager from "@/app/components/DocumentManager";
 
 async function getStudent(id: string) {
   const s = await prisma.student.findUnique({
@@ -14,7 +15,11 @@ async function getStudent(id: string) {
   );
   const balance = s.agreedPriceCents - paid;
   const missing = REQUIRED_DOC_TYPES.filter(
-    (t) => !s.documents.some((d: { type: string }) => d.type === t)
+    (t) =>
+      !s.documents.some(
+        (d: { type: string; isSubmitted: boolean }) =>
+          d.type === t && d.isSubmitted
+      )
   );
   return { ...s, paid, balance, missing };
 }
@@ -220,53 +225,7 @@ export default async function StudentDetail({
         </section>
 
         <section className="bg-white border rounded p-4">
-          <h3 className="font-semibold mb-3">Documents</h3>
-          <form
-            className="flex gap-2 mb-3"
-            action={addDocument.bind(null, s.id)}
-            encType="multipart/form-data"
-          >
-            <select name="type" required>
-              {REQUIRED_DOC_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-            <input name="file" type="file" required />
-            <button type="submit" className="btn btn-primary">
-              Upload
-            </button>
-          </form>
-          <ul className="space-y-2">
-            {s.documents.map(
-              (d: { id: string; type: string; filename: string }) => (
-                <li
-                  key={d.id}
-                  className="flex justify-between border rounded p-2"
-                >
-                  <span>{d.type}</span>
-                  <span className="flex items-center gap-3">
-                    <a
-                      className="text-blue-600"
-                      href={`/uploads/${d.filename}`}
-                      target="_blank"
-                    >
-                      view
-                    </a>
-                    <form action={deleteDocument.bind(null, s.id, d.id)}>
-                      <button
-                        type="submit"
-                        className="btn btn-danger text-sm px-3 py-1"
-                      >
-                        Remove
-                      </button>
-                    </form>
-                  </span>
-                </li>
-              )
-            )}
-          </ul>
+          <DocumentManager studentId={s.id} documents={s.documents} />
           {s.missing.length > 0 && (
             <div className="text-sm text-red-600 mt-2">
               Missing: {s.missing.join(", ")}
@@ -285,34 +244,6 @@ async function addPayment(studentId: string, formData: FormData) {
   await prisma.payment.create({
     data: { studentId, amountCents: amount, method },
   });
-  redirect(`/students/${studentId}`);
-}
-
-async function addDocument(studentId: string, formData: FormData) {
-  "use server";
-  const type = String(formData.get("type"));
-  const file = formData.get("file") as File | null;
-  if (!file) return redirect(`/students/${studentId}`);
-  const arrayBuffer = await file.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-  const safeName = `${Date.now()}-${file.name.replace(
-    /[^a-zA-Z0-9_\.-]/g,
-    "_"
-  )}`;
-  const fs = await import("fs/promises");
-  const path = await import("path");
-  const uploadsDir = path.join(process.cwd(), "public", "uploads");
-  await fs.mkdir(uploadsDir, { recursive: true });
-  await fs.writeFile(path.join(uploadsDir, safeName), buffer);
-  await prisma.document.create({
-    data: { studentId, type, filename: safeName },
-  });
-  redirect(`/students/${studentId}`);
-}
-
-async function deleteDocument(studentId: string, documentId: string) {
-  "use server";
-  await prisma.document.delete({ where: { id: documentId } });
   redirect(`/students/${studentId}`);
 }
 

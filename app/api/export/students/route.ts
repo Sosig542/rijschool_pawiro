@@ -25,7 +25,11 @@ export async function GET() {
     );
     const balance = s.agreedPriceCents - paid;
     const missing = REQUIRED_DOC_TYPES.filter(
-      (t) => !s.documents.some((d: { type: string }) => d.type === t)
+      (t) =>
+        !s.documents.some(
+          (d: { type: string; isSubmitted: boolean }) =>
+            d.type === t && d.isSubmitted
+        )
     );
     rows.push([
       String(s.registrationId),

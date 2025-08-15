@@ -40,7 +40,7 @@ async function getData(
         licenseCategory: string;
         agreedPriceCents: number;
         payments: Array<{ amountCents: number }>;
-        documents: Array<{ type: string }>;
+        documents: Array<{ type: string; isSubmitted: boolean }>;
       }) => {
         const paid = s.payments.reduce(
           (sum: number, p: { amountCents: number }) => sum + p.amountCents,
@@ -48,7 +48,11 @@ async function getData(
         );
         const balance = s.agreedPriceCents - paid;
         const missingDocs = REQUIRED_DOC_TYPES.filter(
-          (t) => !s.documents.some((d: { type: string }) => d.type === t)
+          (t) =>
+            !s.documents.some(
+              (d: { type: string; isSubmitted: boolean }) =>
+                d.type === t && d.isSubmitted
+            )
         );
         const paymentStatus = balance <= 0 ? "paid" : "outstanding";
         return { ...s, paid, balance, missingDocs, paymentStatus };

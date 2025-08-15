@@ -135,6 +135,9 @@ export default async function Dashboard({
           </svg>
           Register Student
         </Link>
+        <Link className="btn btn-secondary" href="/lessons">
+          Manage Lessons
+        </Link>
         <Link className="btn btn-secondary" href="/settings">
           Settings
         </Link>

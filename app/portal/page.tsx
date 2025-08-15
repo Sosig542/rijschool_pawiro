@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import PracticalLessonProgress from "@/app/components/PracticalLessonProgress";
+import LessonBooking from "@/app/components/LessonBooking";
 
 async function findStudentById(id?: string) {
   if (!id) return null;
@@ -15,6 +17,10 @@ async function findStudentById(id?: string) {
       practicalStatus: true,
       theoryExamAt: true,
       practicalExamAt: true,
+      lessonBookings: {
+        where: { status: "COMPLETED" },
+        select: { id: true },
+      },
     },
   });
   if (!s) return null;
@@ -22,7 +28,8 @@ async function findStudentById(id?: string) {
     (sum: number, p: { amountCents: number }) => sum + p.amountCents,
     0
   );
-  return { ...s, paid } as any;
+  const completedLessons = s.lessonBookings.length;
+  return { ...s, paid, completedLessons } as any;
 }
 
 async function getNews() {
@@ -63,66 +70,89 @@ export default async function Portal({
       )}
 
       {student && (
-        <div className="card p-4">
-          <h3 className="font-semibold mb-3">Your Details</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <span className="text-gray-500 text-sm">Name</span>
-              <div>{(student as any).name}</div>
-            </div>
-            <div>
-              <span className="text-gray-500 text-sm">Reg ID</span>
-              <div>{(student as any).registrationId}</div>
-            </div>
-            <div>
-              <span className="text-gray-500 text-sm">Balance (SRD)</span>
-              <div
-                className={
-                  (student as any).agreedPriceCents - (student as any).paid > 0
-                    ? "text-red-600"
-                    : "text-green-700"
-                }
-              >
-                {(
-                  ((student as any).agreedPriceCents - (student as any).paid) /
-                  100
-                ).toFixed(2)}
-              </div>
-            </div>
-            <div>
-              <span className="text-gray-500 text-sm">Theory</span>
+        <>
+          <div className="card p-4">
+            <h3 className="font-semibold mb-3">Your Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                {(student as any).theoryStatus === "GESLAAGD"
-                  ? "Geslaagd"
-                  : "Niet gehaald"}
+                <span className="text-gray-500 text-sm">Name</span>
+                <div>{(student as any).name}</div>
               </div>
-            </div>
-            <div>
-              <span className="text-gray-500 text-sm">Theory Date</span>
               <div>
-                {(student as any).theoryExamAt
-                  ? new Date((student as any).theoryExamAt).toLocaleString()
-                  : "-"}
+                <span className="text-gray-500 text-sm">Reg ID</span>
+                <div>{(student as any).registrationId}</div>
               </div>
-            </div>
-            <div>
-              <span className="text-gray-500 text-sm">Practical</span>
               <div>
-                {(student as any).practicalStatus === "GESLAAGD"
-                  ? "Geslaagd"
-                  : "Niet gehaald"}
+                <span className="text-gray-500 text-sm">Balance (SRD)</span>
+                <div
+                  className={
+                    (student as any).agreedPriceCents - (student as any).paid >
+                    0
+                      ? "text-red-600"
+                      : "text-green-700"
+                  }
+                >
+                  {(
+                    ((student as any).agreedPriceCents -
+                      (student as any).paid) /
+                    100
+                  ).toFixed(2)}
+                </div>
               </div>
-            </div>
-            <div>
-              <span className="text-gray-500 text-sm">Practical Date</span>
               <div>
-                {(student as any).practicalExamAt
-                  ? new Date((student as any).practicalExamAt).toLocaleString()
-                  : "-"}
+                <span className="text-gray-500 text-sm">Theory</span>
+                <div>
+                  {(student as any).theoryStatus === "GESLAAGD"
+                    ? "Geslaagd"
+                    : "Niet gehaald"}
+                </div>
+              </div>
+              <div>
+                <span className="text-gray-500 text-sm">Theory Date</span>
+                <div>
+                  {(student as any).theoryExamAt
+                    ? new Date((student as any).theoryExamAt).toLocaleString()
+                    : "-"}
+                </div>
+              </div>
+              <div>
+                <span className="text-gray-500 text-sm">Practical</span>
+                <div>
+                  {(student as any).practicalStatus === "GESLAAGD"
+                    ? "Geslaagd"
+                    : "Niet gehaald"}
+                </div>
+              </div>
+              <div>
+                <span className="text-gray-500 text-sm">Practical Date</span>
+                <div>
+                  {(student as any).practicalExamAt
+                    ? new Date(
+                        (student as any).practicalExamAt
+                      ).toLocaleString()
+                    : "-"}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+
+          {/* Practical Lesson Progress - Only show if theory is passed */}
+          {(student as any).theoryStatus === "GESLAAGD" && (
+            <PracticalLessonProgress
+              completedLessons={(student as any).completedLessons}
+              studentId={(student as any).id}
+            />
+          )}
+
+          {/* Lesson Booking - Only show if theory is passed and less than 8 lessons completed */}
+          {(student as any).theoryStatus === "GESLAAGD" &&
+            (student as any).completedLessons < 8 && (
+              <LessonBooking
+                studentId={(student as any).id}
+                completedLessons={(student as any).completedLessons}
+              />
+            )}
+        </>
       )}
 
       <section className="card p-4">
