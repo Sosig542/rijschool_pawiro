@@ -112,7 +112,7 @@ export default function AdminStats({}: AdminStatsProps) {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[...Array(3)].map((_, i) => (
           <div key={i} className="stat animate-pulse">
             <div className="h-8 bg-gray-200 rounded mb-2"></div>
@@ -135,7 +135,7 @@ export default function AdminStats({}: AdminStatsProps) {
   return (
     <div className="space-y-4">
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div
           className={`stat cursor-pointer transition-all duration-200 hover:shadow-md ${
             selectedFilter === "theory"
@@ -144,7 +144,7 @@ export default function AdminStats({}: AdminStatsProps) {
           }`}
           onClick={() => handleStatClick("theory")}
         >
-          <div className="text-2xl font-bold text-green-600">
+          <div className="text-xl sm:text-2xl font-bold text-green-600">
             {stats.theoryPassed}
           </div>
           <div className="text-sm text-gray-600">Theory Passed</div>
@@ -158,21 +158,21 @@ export default function AdminStats({}: AdminStatsProps) {
           }`}
           onClick={() => handleStatClick("practical")}
         >
-          <div className="text-2xl font-bold text-purple-600">
+          <div className="text-xl sm:text-2xl font-bold text-purple-600">
             {stats.practicalPassed}
           </div>
           <div className="text-sm text-gray-600">Practical Passed</div>
         </div>
 
         <div
-          className={`stat cursor-pointer transition-all duration-200 hover:shadow-md ${
+          className={`stat cursor-pointer transition-all duration-200 hover:shadow-md sm:col-span-2 lg:col-span-1 ${
             selectedFilter === "missingDocs"
               ? "ring-2 ring-red-500 bg-red-50"
               : ""
           }`}
           onClick={() => handleStatClick("missingDocs")}
         >
-          <div className="text-2xl font-bold text-red-600">
+          <div className="text-xl sm:text-2xl font-bold text-red-600">
             {stats.missingDocs}
           </div>
           <div className="text-sm text-gray-600">Missing Documents</div>
@@ -201,7 +201,65 @@ export default function AdminStats({}: AdminStatsProps) {
             </button>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Mobile view - Cards */}
+          <div className="lg:hidden space-y-3">
+            {filteredStudents.map((student) => (
+              <div
+                key={student.id}
+                className="border rounded-lg p-3 bg-gray-50"
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <div className="font-medium text-sm">
+                    #{student.registrationId}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {formatDate(student.registeredAt)}
+                  </div>
+                </div>
+                <div className="font-medium mb-2">{student.name}</div>
+                <div className="flex gap-2 mb-2">
+                  <span
+                    className={`px-2 py-1 rounded text-xs ${
+                      student.theoryStatus === "GESLAAGD"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    Theory:{" "}
+                    {student.theoryStatus === "GESLAAGD"
+                      ? "Passed"
+                      : "Not Passed"}
+                  </span>
+                  <span
+                    className={`px-2 py-1 rounded text-xs ${
+                      student.practicalStatus === "GESLAAGD"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    Practical:{" "}
+                    {student.practicalStatus === "GESLAAGD"
+                      ? "Passed"
+                      : "Not Passed"}
+                  </span>
+                </div>
+                {selectedFilter === "missingDocs" && (
+                  <div className="text-xs text-gray-600">
+                    <span className="font-medium">Missing:</span>{" "}
+                    {REQUIRED_DOC_TYPES.filter(
+                      (required) =>
+                        !student.documents.some(
+                          (d) => d.type === required && d.isSubmitted
+                        )
+                    ).join(", ")}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop view - Table */}
+          <div className="hidden lg:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">

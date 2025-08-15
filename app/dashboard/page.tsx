@@ -83,9 +83,9 @@ export default function Dashboard() {
   }
 
   return (
-    <main className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
+    <main className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <h1 className="text-xl sm:text-2xl font-semibold">Dashboard</h1>
         <div className="flex gap-2">
           <MonthFilter
             month={month || undefined}
@@ -96,15 +96,15 @@ export default function Dashboard() {
 
       <AdminStats />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="stat">
-          <div className="text-2xl font-bold text-blue-600">
+          <div className="text-xl sm:text-2xl font-bold text-blue-600">
             {metrics.totalStudents}
           </div>
           <div className="text-sm text-gray-600">Total Students</div>
         </div>
         <div className="stat">
-          <div className="text-2xl font-bold text-green-600">
+          <div className="text-xl sm:text-2xl font-bold text-green-600">
             SRD{" "}
             {(
               (month ? metrics.monthFilteredReceived : metrics.totalReceived) /
@@ -115,15 +115,15 @@ export default function Dashboard() {
             Total Received {month ? `(${month})` : ""}
           </div>
         </div>
-        <div className="stat">
-          <div className="text-2xl font-bold text-orange-600">
+        <div className="stat sm:col-span-2 lg:col-span-1">
+          <div className="text-xl sm:text-2xl font-bold text-orange-600">
             SRD {(metrics.totalOutstanding / 100).toFixed(2)}
           </div>
           <div className="text-sm text-gray-600">Outstanding Payments</div>
         </div>
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row gap-3">
         <Link className="btn btn-secondary" href="/students">
           View Students
         </Link>
@@ -148,6 +148,9 @@ export default function Dashboard() {
         </Link>
         <Link className="btn btn-secondary" href="/settings">
           Settings
+        </Link>
+        <Link className="btn btn-secondary" href="/newsletters">
+          Newsletters
         </Link>
         <Link className="btn btn-secondary" href="/api/export/students">
           Export CSV

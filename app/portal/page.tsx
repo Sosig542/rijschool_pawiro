@@ -49,17 +49,20 @@ export default async function Portal({
     getNews(),
   ]);
   return (
-    <main className="space-y-6">
+    <main className="space-y-4 sm:space-y-6">
       <div className="card p-4">
-        <h2 className="text-xl font-semibold mb-2">Student Portal</h2>
-        <form action="/portal" className="flex gap-2">
+        <h2 className="text-lg sm:text-xl font-semibold mb-2">
+          Student Portal
+        </h2>
+        <form action="/portal" className="flex flex-col sm:flex-row gap-2">
           <input
             name="id"
             placeholder="ID Card Number"
             defaultValue={searchParams.id ?? ""}
             required
+            className="flex-1"
           />
-          <button className="btn btn-primary">Search</button>
+          <button className="btn btn-primary w-full sm:w-auto">Search</button>
         </form>
       </div>
 
@@ -73,7 +76,7 @@ export default async function Portal({
         <>
           <div className="card p-4">
             <h3 className="font-semibold mb-3">Your Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <span className="text-gray-500 text-sm">Name</span>
                 <div>{(student as any).name}</div>

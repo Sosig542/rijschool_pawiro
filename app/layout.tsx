@@ -11,9 +11,15 @@ export const metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+      </head>
       <body>
         <ToastProvider>
-          <div className="container py-6">
+          <div className="container py-4 sm:py-6">
             <Header />
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
               <aside className="hidden lg:block lg:col-span-3">

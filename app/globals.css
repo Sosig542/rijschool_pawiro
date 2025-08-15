@@ -20,6 +20,7 @@
   select,
   textarea {
     @apply border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+    min-height: 44px; /* Better touch target for mobile */
   }
 
   label {
@@ -28,12 +29,13 @@
 
   button {
     @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+    min-height: 44px; /* Better touch target for mobile */
   }
 }
 
 @layer components {
   .container {
-    @apply max-w-7xl mx-auto px-4;
+    @apply max-w-7xl mx-auto px-4 sm:px-6;
   }
 
   .card {
@@ -41,11 +43,12 @@
   }
 
   .stat {
-    @apply bg-white border border-gray-200 rounded-lg p-4;
+    @apply bg-white border border-gray-200 rounded-lg p-3 sm:p-4;
   }
 
   .btn {
     @apply inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    min-height: 44px; /* Better touch target for mobile */
   }
 
   .btn-primary {
@@ -62,6 +65,36 @@
 
   .btn-danger {
     @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+  }
+
+  /* Mobile-specific utilities */
+  .mobile-only {
+    @apply block sm:hidden;
+  }
+
+  .desktop-only {
+    @apply hidden sm:block;
+  }
+
+  /* Responsive text utilities */
+  .text-responsive-sm {
+    @apply text-xs sm:text-sm;
+  }
+
+  .text-responsive-base {
+    @apply text-sm sm:text-base;
+  }
+
+  .text-responsive-lg {
+    @apply text-base sm:text-lg;
+  }
+
+  .text-responsive-xl {
+    @apply text-lg sm:text-xl;
+  }
+
+  .text-responsive-2xl {
+    @apply text-xl sm:text-2xl;
   }
 }
 
