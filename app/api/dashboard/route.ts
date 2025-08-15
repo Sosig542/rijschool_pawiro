@@ -1,46 +1,58 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { REQUIRED_DOC_TYPES } from "@/lib/requiredDocs";
 
-export async function GET() {
-  const [students, payments] = await Promise.all([
-    prisma.student.findMany({ include: { documents: true, payments: true } }),
-    prisma.payment.findMany(),
-  ]);
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const month = searchParams.get("month");
+
+  const students = await prisma.student.findMany({
+    include: {
+      documents: true,
+      payments: true,
+    },
+  });
 
   const totalStudents = students.length;
-  const missingDocs = students.filter(
-    (s: { documents: Array<{ type: string; isSubmitted: boolean }> }) =>
-      REQUIRED_DOC_TYPES.some(
-        (t) =>
-          !s.documents.some(
-            (d: { type: string; isSubmitted: boolean }) =>
-              d.type === t && d.isSubmitted
-          )
-      )
-  ).length;
-  const totalReceived = payments.reduce(
-    (sum: number, p: { amountCents: number }) => sum + p.amountCents,
-    0
-  );
-  const totalOutstanding = students.reduce(
-    (
-      sum: number,
-      s: { payments: Array<{ amountCents: number }>; agreedPriceCents: number }
-    ) => {
-      const paid = s.payments.reduce(
-        (ps: number, p: { amountCents: number }) => ps + p.amountCents,
-        0
-      );
-      return sum + Math.max(s.agreedPriceCents - paid, 0);
-    },
-    0
-  );
+
+  const totalReceived = students.reduce((sum: number, s: any) => {
+    const studentPayments = s.payments.reduce(
+      (pSum: number, p: any) => pSum + p.amountCents,
+      0
+    );
+    return sum + studentPayments;
+  }, 0);
+
+  const totalOutstanding = students.reduce((sum: number, s: any) => {
+    const studentPayments = s.payments.reduce(
+      (pSum: number, p: any) => pSum + p.amountCents,
+      0
+    );
+    const outstanding = s.agreedPriceCents - studentPayments;
+    return sum + Math.max(0, outstanding);
+  }, 0);
+
+  // Filter by month if specified
+  let monthFilteredReceived = totalReceived;
+  if (month) {
+    const [year, monthNum] = month.split("-").map(Number);
+    const startDate = new Date(year, monthNum - 1, 1);
+    const endDate = new Date(year, monthNum, 0, 23, 59, 59);
+
+    monthFilteredReceived = students.reduce((sum: number, s: any) => {
+      const monthPayments = s.payments
+        .filter((p: any) => {
+          const paymentDate = new Date(p.paymentDate);
+          return paymentDate >= startDate && paymentDate <= endDate;
+        })
+        .reduce((pSum: number, p: any) => pSum + p.amountCents, 0);
+      return sum + monthPayments;
+    }, 0);
+  }
 
   return NextResponse.json({
     totalStudents,
-    missingDocs,
     totalReceived,
+    monthFilteredReceived,
     totalOutstanding,
   });
 }

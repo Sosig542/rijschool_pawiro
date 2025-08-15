@@ -59,6 +59,10 @@ async function getStudentsData() {
       name: true,
       registrationId: true,
       registeredAt: true,
+      theoryStatus: true,
+      practicalStatus: true,
+      theoryExamAt: true,
+      practicalExamAt: true,
       lessonBookings: {
         where: { status: "SCHEDULED" },
         select: {
@@ -66,6 +70,12 @@ async function getStudentsData() {
           schedule: {
             select: { dayOfWeek: true },
           },
+        },
+      },
+      documents: {
+        select: {
+          type: true,
+          isSubmitted: true,
         },
       },
     },

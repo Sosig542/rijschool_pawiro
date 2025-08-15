@@ -27,7 +27,10 @@ export async function GET(request: Request) {
     }
   }
   const many = await prisma.student.findMany({
-    include: { documents: true, payments: true },
+    include: {
+      documents: true,
+      payments: true,
+    },
     where,
   });
   const data = many
