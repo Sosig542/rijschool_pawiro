@@ -1,6 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation";
 import { Nav } from "./Nav";
+import { signOut } from "next-auth/react";
 
 export function Header() {
   const pathname = usePathname();
@@ -10,6 +11,11 @@ export function Header() {
     pathname.startsWith("/login") ||
     pathname.startsWith("/instructor/login")
   );
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/" });
+  };
+
   return (
     <header className="mb-4 sm:mb-6 flex items-center justify-between">
       <div className="flex items-center gap-2 sm:gap-3">
@@ -20,7 +26,19 @@ export function Header() {
           Rijschool Pawiro
         </h1>
       </div>
-      {showNav ? <Nav /> : null}
+      <div className="flex items-center gap-3">
+        {showNav && (
+          <>
+            <Nav />
+            <button
+              onClick={handleLogout}
+              className="px-3 py-2 rounded-md text-red-600 hover:bg-red-50 transition-colors border border-red-200 hover:border-red-300 text-sm font-medium"
+            >
+              Logout
+            </button>
+          </>
+        )}
+      </div>
     </header>
   );
 }
