@@ -55,10 +55,10 @@ export function DynamicTips() {
 
     if (pathname.startsWith("/newsletters")) {
       return [
-        "Draft newsletters before publishing to review content",
-        "Use clear, engaging titles to increase readership",
-        "Include relevant updates about exam schedules and policies",
-        "Unpublish outdated newsletters to keep content fresh",
+        "Use 'Important' category for urgent announcements and exam updates",
+        "Use 'General' category for regular news and information",
+        "Important newsletters get red warning icons and left border styling",
+        "Draft newsletters before publishing to review content and category",
       ];
     }
 
@@ -78,6 +78,7 @@ export function DynamicTips() {
       return [
         "Set your weekly availability for student lesson bookings",
         "Maximum 5 students per day ensures quality instruction",
+        "Cancel lessons when needed - students receive SMS notifications",
         "Review your schedule regularly for any conflicts",
         "Update availability if your schedule changes",
       ];

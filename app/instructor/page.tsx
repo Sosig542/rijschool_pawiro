@@ -64,13 +64,28 @@ async function getStudentsData() {
       theoryExamAt: true,
       practicalExamAt: true,
       lessonBookings: {
-        where: { status: "SCHEDULED" },
-        select: {
-          lessonDate: true,
+        where: {
+          status: { in: ["SCHEDULED", "CANCELLED"] },
           schedule: {
-            select: { dayOfWeek: true },
+            instructor: {
+              name: "Default Instructor", // For now, hardcoded - in real app would be based on authenticated instructor
+            },
           },
         },
+        select: {
+          id: true,
+          lessonDate: true,
+          status: true,
+          schedule: {
+            select: {
+              dayOfWeek: true,
+              instructor: {
+                select: { name: true },
+              },
+            },
+          },
+        },
+        orderBy: { lessonDate: "asc" },
       },
       documents: {
         select: {

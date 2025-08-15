@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
@@ -24,7 +24,7 @@ declare module "next-auth/jwt" {
   }
 }
 
-const handler = NextAuth({
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -81,22 +81,24 @@ const handler = NextAuth({
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {
+    jwt({ token, user }: { token: any; user: any }) {
       if (user) {
         token.role = user.role;
       }
       return token;
     },
-    session({ session, token }) {
+    session({ session, token }: { session: any; token: any }) {
       if (token && session.user) {
         session.user.role = token.role;
       }
       return session;
     },
   },
-  session: { strategy: "jwt" },
+  session: { strategy: "jwt" as const },
   pages: { signIn: "/login" },
   secret: process.env.NEXTAUTH_SECRET ?? "dev-secret-local",
-});
+};
+
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
