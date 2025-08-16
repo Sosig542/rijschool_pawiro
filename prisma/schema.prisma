@@ -39,6 +39,7 @@ model Student {
   practicalStatus    ExamResult       @default(NIET_GEHAALD)
   theoryExamAt       DateTime?
   practicalExamAt    DateTime?
+  passedExams        String[]         @default([]) // Array of already passed exam categories (e.g., ["BE", "C"])
   documents          Document[]
   payments           Payment[]
   lessonBookings     LessonBooking[]

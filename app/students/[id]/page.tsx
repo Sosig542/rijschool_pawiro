@@ -121,6 +121,27 @@ export default async function StudentDetail({
       </section>
 
       <section className="bg-white border rounded p-4">
+        <h3 className="font-semibold mb-3">Already Passed Exams</h3>
+        {(s as any).passedExams && (s as any).passedExams.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {(s as any).passedExams.map((exam: string) => (
+              <span
+                key={exam}
+                className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800"
+              >
+                ✓ {exam}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <div className="text-sm text-gray-600">No exams passed yet.</div>
+        )}
+        <p className="text-xs text-gray-500 mt-2">
+          These exams cannot be selected as the current license category.
+        </p>
+      </section>
+
+      <section className="bg-white border rounded p-4">
         <h3 className="font-semibold mb-3">Edit Student</h3>
         <form
           className="grid grid-cols-1 md:grid-cols-2 gap-3"
@@ -153,11 +174,91 @@ export default async function StudentDetail({
               defaultValue={s.licenseCategory}
               required
             >
-              <option value="A">A</option>
-              <option value="C">C</option>
-              <option value="D">D</option>
-              <option value="BE">BE</option>
+              <option
+                value="A"
+                disabled={(s as any).passedExams?.includes("A")}
+              >
+                A{" "}
+                {(s as any).passedExams?.includes("A")
+                  ? "(Already Passed)"
+                  : ""}
+              </option>
+              <option
+                value="C"
+                disabled={(s as any).passedExams?.includes("C")}
+              >
+                C{" "}
+                {(s as any).passedExams?.includes("C")
+                  ? "(Already Passed)"
+                  : ""}
+              </option>
+              <option
+                value="D"
+                disabled={(s as any).passedExams?.includes("D")}
+              >
+                D{" "}
+                {(s as any).passedExams?.includes("D")
+                  ? "(Already Passed)"
+                  : ""}
+              </option>
+              <option
+                value="BE"
+                disabled={(s as any).passedExams?.includes("BE")}
+              >
+                BE{" "}
+                {(s as any).passedExams?.includes("BE")
+                  ? "(Already Passed)"
+                  : ""}
+              </option>
             </select>
+            <p className="text-xs text-gray-500 mt-1">
+              Already passed exams cannot be selected as the current license
+              category
+            </p>
+          </div>
+          <div className="md:col-span-2">
+            <label>Already Passed Exams</label>
+            <div className="text-sm text-gray-600 mb-2">
+              Select all exam categories you have already passed
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  name="passedExams"
+                  value="A"
+                  defaultChecked={(s as any).passedExams?.includes("A")}
+                />
+                <span>Category A</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  name="passedExams"
+                  value="C"
+                  defaultChecked={(s as any).passedExams?.includes("C")}
+                />
+                <span>Category C</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  name="passedExams"
+                  value="D"
+                  defaultChecked={(s as any).passedExams?.includes("D")}
+                />
+                <span>Category D</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  name="passedExams"
+                  value="BE"
+                  defaultChecked={(s as any).passedExams?.includes("BE")}
+                />
+                <span>Category BE</span>
+              </label>
+            </div>
           </div>
           <div>
             <label>Agreed Price (SRD)</label>
@@ -257,6 +358,10 @@ async function updateStudent(studentId: string, formData: FormData) {
   const price = Math.round(
     parseFloat(String(formData.get("price") ?? "0")) * 100
   );
+
+  // Get all selected passed exams
+  const passedExams = formData.getAll("passedExams") as string[];
+
   await prisma.student.update({
     where: { id: studentId },
     data: {
@@ -266,6 +371,7 @@ async function updateStudent(studentId: string, formData: FormData) {
       address,
       licenseCategory,
       agreedPriceCents: price,
+      passedExams,
     },
   });
   redirect(`/students/${studentId}`);

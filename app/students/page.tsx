@@ -109,6 +109,7 @@ export default async function StudentsPage({
               <th className="text-left p-2">Reg ID</th>
               <th className="text-left p-2">Name</th>
               <th className="text-left p-2">License</th>
+              <th className="text-left p-2">Passed Exams</th>
               <th className="text-left p-2">Agreed Price</th>
               <th className="text-left p-2">Paid</th>
               <th className="text-left p-2">Balance</th>
@@ -125,6 +126,23 @@ export default async function StudentsPage({
                   </Link>
                 </td>
                 <td className="p-2">{s.licenseCategory}</td>
+                <td className="p-2">
+                  {(s as any).passedExams &&
+                  (s as any).passedExams.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {(s as any).passedExams.map((exam: string) => (
+                        <span
+                          key={exam}
+                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                        >
+                          {exam}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-gray-500 text-sm">None</span>
+                  )}
+                </td>
                 <td className="p-2">
                   SRD {(s.agreedPriceCents / 100).toFixed(2)}
                 </td>
