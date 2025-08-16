@@ -23,6 +23,7 @@ export default function InstructorSchedule({
   const [schedules, setSchedules] = useState<Schedule[]>(initialSchedules);
   const [editingSchedule, setEditingSchedule] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [editForm, setEditForm] = useState<Partial<Schedule>>({});
 
   const dayNames = {
     MONDAY: "Monday",
@@ -93,12 +94,33 @@ export default function InstructorSchedule({
           prev.map((s) => (s.id === scheduleId ? { ...s, ...updates } : s))
         );
         setEditingSchedule(null);
+        setEditForm({});
       }
     } catch (error) {
       console.error("Failed to update schedule:", error);
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  const handleEditClick = (schedule: Schedule) => {
+    setEditingSchedule(schedule.id);
+    setEditForm({
+      startTime: schedule.startTime,
+      endTime: schedule.endTime,
+      maxStudents: schedule.maxStudents,
+    });
+  };
+
+  const handleSaveEdit = () => {
+    if (editingSchedule && editForm) {
+      handleUpdateSchedule(editingSchedule, editForm);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingSchedule(null);
+    setEditForm({});
   };
 
   return (
@@ -124,14 +146,18 @@ export default function InstructorSchedule({
                 <button
                   onClick={() => handleToggleAvailability(schedule.id)}
                   disabled={isUpdating}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-offset-1 ${
                     schedule.isAvailable
-                      ? "bg-blue-600 focus:ring-blue-500"
-                      : "bg-gray-200 focus:ring-gray-500"
+                      ? "bg-blue-500 focus:ring-blue-400"
+                      : "bg-gray-300 focus:ring-gray-400"
+                  } ${
+                    isUpdating
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:opacity-80"
                   }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-out ${
                       schedule.isAvailable ? "translate-x-6" : "translate-x-1"
                     }`}
                   />
@@ -176,7 +202,7 @@ export default function InstructorSchedule({
             {/* Quick Actions */}
             <div className="mt-4 pt-3 border-t border-current border-opacity-20">
               <button
-                onClick={() => setEditingSchedule(schedule.id)}
+                onClick={() => handleEditClick(schedule)}
                 className="w-full text-sm font-medium hover:opacity-80 transition-opacity"
               >
                 Edit Schedule
@@ -185,6 +211,109 @@ export default function InstructorSchedule({
           </div>
         ))}
       </div>
+
+      {/* Edit Schedule Modal */}
+      {editingSchedule && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Edit Schedule
+              </h3>
+              <button
+                onClick={handleCancelEdit}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Time Range */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Start Time
+                  </label>
+                  <input
+                    type="time"
+                    value={editForm.startTime || ""}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, startTime: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    End Time
+                  </label>
+                  <input
+                    type="time"
+                    value={editForm.endTime || ""}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, endTime: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+
+              {/* Max Students */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Max Students
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={editForm.maxStudents || ""}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      maxStudents: parseInt(e.target.value) || 1,
+                    })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Maximum number of students that can book this time slot
+                </p>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
+              <button
+                onClick={handleCancelEdit}
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                disabled={isUpdating}
+                className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isUpdating ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Quick Stats */}
       <div className="bg-gray-50 rounded-lg p-4">
@@ -231,14 +360,15 @@ export default function InstructorSchedule({
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              d="M13 16h-1v-4h-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
           <div className="text-sm text-blue-800">
             <p className="font-medium mb-1">Schedule Management Tips:</p>
             <ul className="space-y-1 text-blue-700">
               <li>• Toggle availability for each day using the switch</li>
-              <li>• Set maximum students per day (default: 5)</li>
+              <li>• Click "Edit Schedule" to modify time and capacity</li>
+              <li>• Set maximum students per day (1-10 students)</li>
               <li>
                 • Students can only book when days are marked as available
               </li>
