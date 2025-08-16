@@ -30,7 +30,7 @@ export async function GET() {
           data: {
             instructorId: newInstructor.id,
             dayOfWeek: day as any,
-            isAvailable: false,
+            isAvailable: true, // Make schedules available by default
             maxStudents: 5,
             startTime: "09:00",
             endTime: "17:00",

@@ -6,15 +6,24 @@ import InstructorStudents from "@/app/components/InstructorStudents";
 import InstructorStats from "@/app/components/InstructorStats";
 import MobileNavigation from "@/app/components/MobileNavigation";
 
+interface Instructor {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  schedules: Array<{
+    id: string;
+    dayOfWeek: string;
+    isAvailable: boolean;
+    maxStudents: number;
+    startTime: string;
+    endTime: string;
+  }>;
+}
+
 export default function InstructorPage() {
   const [activeSection, setActiveSection] = useState("overview");
-  const [instructor, setInstructor] = useState({
-    id: "default",
-    name: "Default Instructor",
-    email: "instructor@rijschool.com",
-    phone: "+597-123-4567",
-    schedules: [],
-  });
+  const [instructor, setInstructor] = useState<Instructor | null>(null);
   const [students, setStudents] = useState([]);
   const [stats, setStats] = useState({
     totalBookings: 0,
@@ -22,6 +31,7 @@ export default function InstructorPage() {
     cancelledBookings: 0,
     completedBookings: 0,
   });
+  const [isLoading, setIsLoading] = useState(true);
 
   const overviewRef = useRef<HTMLDivElement>(null);
   const scheduleRef = useRef<HTMLDivElement>(null);
@@ -72,6 +82,39 @@ export default function InstructorPage() {
     },
   ];
 
+  useEffect(() => {
+    fetchInstructorData();
+  }, []);
+
+  const fetchInstructorData = async () => {
+    try {
+      const response = await fetch("/api/instructor/data");
+      if (response.ok) {
+        const data = await response.json();
+        setInstructor(data.instructor);
+        setStudents(data.students || []);
+        setStats(
+          data.stats || {
+            totalBookings: 0,
+            thisWeekBookings: 0,
+            cancelledBookings: 0,
+            completedBookings: 0,
+          }
+        );
+      } else {
+        console.error("Failed to fetch instructor data");
+      }
+    } catch (error) {
+      console.error("Error fetching instructor data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const refreshData = () => {
+    fetchInstructorData();
+  };
+
   const scrollToSection = (sectionId: string) => {
     setActiveSection(sectionId);
     let targetRef;
@@ -98,24 +141,13 @@ export default function InstructorPage() {
     }
   };
 
-  // Load data on component mount
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch("/api/instructor/data");
-        if (response.ok) {
-          const data = await response.json();
-          setInstructor(data.instructor);
-          setStudents(data.students);
-          setStats(data.stats);
-        }
-      } catch (error) {
-        console.error("Failed to fetch instructor data:", error);
-      }
-    };
+  if (isLoading) {
+    return <div className="text-center py-8">Loading...</div>;
+  }
 
-    fetchData();
-  }, []);
+  if (!instructor) {
+    return <div className="text-center py-8">No instructor data found.</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -200,6 +232,7 @@ export default function InstructorPage() {
                 <InstructorSchedule
                   instructorId={instructor.id}
                   initialSchedules={instructor.schedules}
+                  onScheduleUpdate={refreshData}
                 />
               </div>
             </div>
@@ -217,7 +250,10 @@ export default function InstructorPage() {
                 </p>
               </div>
               <div className="p-6">
-                <InstructorStudents students={students} />
+                <InstructorStudents
+                  students={students}
+                  onUpdate={refreshData}
+                />
               </div>
             </div>
           </div>

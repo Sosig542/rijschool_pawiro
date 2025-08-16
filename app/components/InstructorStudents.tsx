@@ -22,10 +22,12 @@ interface Student {
 
 interface InstructorStudentsProps {
   students: Student[];
+  onUpdate?: () => void;
 }
 
 export default function InstructorStudents({
   students,
+  onUpdate,
 }: InstructorStudentsProps) {
   const [cancellingBookings, setCancellingBookings] = useState<Set<string>>(
     new Set()
@@ -58,8 +60,8 @@ export default function InstructorStudents({
         });
 
         if (response.ok) {
-          // Refresh the page to show updated data
-          window.location.reload();
+          // Call the update function to refresh the data
+          onUpdate?.();
         } else {
           const error = await response.json();
           alert(`Failed to cancel booking: ${error.error}`);

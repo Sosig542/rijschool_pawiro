@@ -14,11 +14,13 @@ interface Schedule {
 interface InstructorScheduleProps {
   instructorId: string;
   initialSchedules: Schedule[];
+  onScheduleUpdate?: () => void;
 }
 
 export default function InstructorSchedule({
   instructorId,
   initialSchedules,
+  onScheduleUpdate,
 }: InstructorScheduleProps) {
   const [schedules, setSchedules] = useState<Schedule[]>(initialSchedules);
   const [editingSchedule, setEditingSchedule] = useState<string | null>(null);
@@ -64,6 +66,7 @@ export default function InstructorSchedule({
             s.id === scheduleId ? { ...s, isAvailable: !s.isAvailable } : s
           )
         );
+        onScheduleUpdate?.();
       }
     } catch (error) {
       console.error("Failed to update schedule:", error);
@@ -95,6 +98,7 @@ export default function InstructorSchedule({
         );
         setEditingSchedule(null);
         setEditForm({});
+        onScheduleUpdate?.();
       }
     } catch (error) {
       console.error("Failed to update schedule:", error);
